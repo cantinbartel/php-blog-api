@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+
+  php:
+    container_name: nfe-114-php
+    build:
+      context: ./
+    volumes:
+      - ./html:/var/www/html/
+    ports:
+      - '8080:80'
+  db:
+    container_name: mysql_playground_db
+    image: mysql:latest
+    restart: always
+    env_file:
+      - ./.env.local
+    ports:
+      - "3640:3306"
+    volumes:
+      - ./mysql:/var/lib/mysql
+  pma:
+    container_name: mysql_playground_pma
+    image: phpmyadmin:latest
+    restart: always
+    ports:
+      - "8895:80"
+    links:
+      - db

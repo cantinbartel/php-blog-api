@@ -1,0 +1,4 @@
+.DS_Store
+.env.local
+/html/.env
+/html/vendor
