@@ -74,19 +74,59 @@ class Post {
     
             return $postId;
         } catch(\PDOException $e) {
-            // if anything goes wrong, we catch the exception, roll back the transaction, and then rethrow the exception.
+            // if anything goes wrong, we catch the exception, roll back the transaction, and then throw the exception.
             $db->rollback();
             throw $e;
         }
     }
 
-    public static function update($id, $data) {
+    public static function update($id, $postData, $categoryId) {
         $db = Database::getConnection();
-        $query = 'UPDATE ' . self::$table . ' SET user_id = :user_id, title = :title, body = :body WHERE id = :id';
-        $data['id'] = $id;
-        $stmt = $db->prepare($query);
-        $stmt->execute($data);
+        
+        try {
+            // Start the transaction
+            $db->beginTransaction();
+    
+            // Update the post in the posts table
+            $updateQuery = 'UPDATE ' . self::$table . ' SET ';
+            $updateData = [];
+
+            foreach($postData as $key => $value){
+                $updateQuery .= $key . ' = :' . $key . ', ';
+                // Named parameters help prevent SQL injection attacks
+                $updateData[':'.$key] = $value;
+            }
+
+            // rtrim function removes the trailing comma from the SQL query 
+            $updateQuery = rtrim($updateQuery, ', ');
+            $updateQuery .= ' WHERE id = :id';
+            $updateData[':id'] = $id;
+
+            $updateStmt = $db->prepare($updateQuery);
+            $updateStmt->execute($updateData);
+            
+            if ($categoryId) {
+                // Update the category in the post_categories table
+                $deleteQuery = 'DELETE FROM post_categories WHERE post_id = :post_id';
+                $deleteStmt = $db->prepare($deleteQuery);
+                $deleteStmt->execute(['post_id' => $id]);
+        
+                $insertQuery = 'INSERT INTO post_categories (post_id, category_id) VALUES (:post_id, :category_id)';
+                $insertStmt = $db->prepare($insertQuery);
+                $insertStmt->execute(['post_id' => $id, 'category_id' => $categoryId]);
+            }    
+
+            // Commit the transaction
+            $db->commit();
+        } catch (\Exception $e) {
+            // An error occurred; rollback the transaction
+            $db->rollback();
+    
+            // Rethrow the exception
+            throw $e;
+        }
     }
+    
 
     public static function delete($id) {
         $db = Database::getConnection();
