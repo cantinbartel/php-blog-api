@@ -20,15 +20,34 @@ class PostController {
         echo json_encode($post);
     }
 
-    // Create a new post
+    // Get posts by category
+    public function indexByCategory($categoryId) {
+        $posts = Post::getPostsByCategory($categoryId);
+        header('Content-Type: application/json');
+        echo json_encode($posts);
+    }
+
+    // Create a post
     public function store() {
         $json = file_get_contents('php://input');
         $data = json_decode($json, true);
-        $postId = Post::create($data);
-        $post = Post::find($postId);
+    
+        $postData = [
+            'title' => $data['title'],
+            'content' => $data['content'],
+            'user_id' => $data['user_id']
+        ];
+    
+        $categoryData = [
+            'category_id' => $data['category_id']
+        ];
+    
+        $post = Post::create($postData, $categoryData);
+    
         header('Content-Type: application/json');
         echo json_encode($post);
     }
+    
 
     // Update a post
     public function update($id) {

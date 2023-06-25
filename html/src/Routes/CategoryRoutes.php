@@ -1,6 +1,8 @@
 <?php
 
-$userController = new \App\Controllers\UserController;
+$UserController = new \App\Controllers\UserController;
+$postController = new \App\Controllers\PostController;
+$categoryController = new \App\Controllers\CategoryController;
 
 // Get the HTTP method, path, and body of the request
 $method = $_SERVER['REQUEST_METHOD'];
@@ -9,31 +11,35 @@ $path = trim($path, "/");
 
 $routes = [
     'GET' => [
-        'users' => function() use ($userController) {
+        'categories' => function() use ($categoryController) {
             // echo json_encode([
             //     'message' => 'url/users',
             //     'MYSQL_DATABASE'=> getenv('MYSQL_DATABASE')
             // ]);
-            return $userController->index();
+            return $categoryController->index();
         },
-        'users/([a-f0-9\-]+)' => function($id) use ($userController) {
+        'categories/([a-f0-9\-]+)' => function($id) use ($categoryController) {
             // echo json_encode(['message' => "url/$id"]);
-            return $userController->show($id);
+            return $categoryController->show($id);
         },
+        'categories/([a-f0-9\-]+)/posts' => function($categoryId) use ($postController) {
+            // echo json_encode(['message' => "url/$id"]);
+            return $postController->indexByCategory($categoryId);
+        }
     ],
     'POST' => [
-        'users' => function() use ($userController) {
-            return $userController->store();
+        'categories' => function() use ($categoryController) {
+            return $categoryController->store();
         }
     ],
     'PUT' => [
-        'users/([a-f0-9\-]+)' => function($id) use ($userController) {
-            return $userController->update($id);
+        'categories/([a-f0-9\-]+)' => function($id) use ($categoryController) {
+            return $categoryController->update($id);
         }
     ],
     'DELETE' => [
-        'users/([a-f0-9\-]+)' => function($id) use ($userController) {
-            return $userController->destroy($id);
+        'users/([a-f0-9\-]+)' => function($id) use ($categoryController) {
+            return $categoryController->destroy($id);
         }
     ],
 ];

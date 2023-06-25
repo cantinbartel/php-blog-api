@@ -5,15 +5,14 @@ use PDO;
 use Ramsey\Uuid\Uuid;
 use App\Config\Database;
 
-class User {
-    private static $table = 'users';
+class Category {
+    private static $table = 'categories';
 
     public static function find($id) {
         $db = Database::getConnection();
         $query = 'SELECT * FROM ' . self::$table . ' WHERE id = ? LIMIT 0,1';
         $stmt = $db->prepare($query);
         $stmt->execute([$id]);
-        // PDO::FETCH_ASSOC returns the data in an associative array.
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
@@ -28,36 +27,20 @@ class User {
     public static function create($data) {
         $db = Database::getConnection();
         $uuid = Uuid::uuid4();
-        $query = 'INSERT INTO ' . self::$table . ' (id, email, password, name, firstname, role) VALUES (:id, :email, :password, :name, :firstname, :role)';
-        if (!isset($data['role'])) {
-            $data['role'] = 'USER';
-        } 
-        $data['id'] = $uuid->toString();   
+        $query = 'INSERT INTO ' . self::$table . ' (id, name) VALUES (:id, :name)';
+        $data['id'] = $uuid->toString();
         $stmt = $db->prepare($query);
         $stmt->execute($data);
         return $db->lastInsertId();
     }
 
     public static function update($id, $data) {
-        // initialize our database connection
         $db = Database::getConnection();
-        $query = 'UPDATE ' . self::$table . ' SET ';
-        $updateData = [];
-    
-        foreach($data as $key => $value){
-            $query .= $key . ' = :' . $key . ', ';
-            // named parameters help prevent SQL injection attacks
-            $updateData[':'.$key] = $value;
-        }
-        // rtrim function removes the trailing comma from our SQL query 
-        $query = rtrim($query, ', ');
-        $query .= ' WHERE id = :id';
-        $updateData[':id'] = $id;
-    
+        $query = 'UPDATE ' . self::$table . ' SET name = :name WHERE id = :id';
+        $data['id'] = $id;
         $stmt = $db->prepare($query);
-        $stmt->execute($updateData);
+        $stmt->execute($data);
     }
-    
 
     public static function delete($id) {
         $db = Database::getConnection();

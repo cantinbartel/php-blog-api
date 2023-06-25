@@ -11,16 +11,18 @@ class Database
     private static $dbname;
     private static $username;
     private static $password;
-    private static $conn;
+    private static $conn = null;
+
+    // constructeur privé
 
     // get the database connection
-    public static function getConnection() {
+    public static function getConnection(): PDO {
         self::$dbname = 'blog_api';
         self::$username = 'root';
         self::$password = 'rootpassword';
-        self::$conn = null;
+        // self::$conn = null;
 
-        print(getenv('MYSQL_DATABASE'));
+        // print($_ENV['MYSQL_DATABASE']);
         print(getenv('MYSQL_USER'));
         print(getenv('MYSQL_PASSWORD'));
 
