@@ -8,6 +8,13 @@ use App\Config\Database;
 class User {
     private static $table = 'users';
 
+    private static function validate($data) {
+        if (!isset($data['email']) || !isset($data['password']) || !isset($data['name']) || !isset($data['firstname'])) {
+            throw new \InvalidArgumentException("Missing required fields: email, password, name, firstname");
+        }
+        return;
+    }
+
     public static function find($id) {
         $db = Database::getConnection();
         $query = 'SELECT * FROM ' . self::$table . ' WHERE id = ? LIMIT 0,1';
@@ -26,6 +33,7 @@ class User {
     }
 
     public static function create($data) {
+        self::validate($data);
         $db = Database::getConnection();
         $uuid = Uuid::uuid4();
         $query = 'INSERT INTO ' . self::$table . ' (id, email, password, name, firstname, role) VALUES (:id, :email, :password, :name, :firstname, :role)';
@@ -34,14 +42,14 @@ class User {
         } 
         $data['id'] = $uuid->toString();   
         $stmt = $db->prepare($query);
-        $stmt->execute($data);
-        return $db->lastInsertId();
+        $result = $stmt->execute($data);
+        return $result;
     }
 
     public static function update($id, $data) {
         // initialize our database connection
         $db = Database::getConnection();
-        $query = 'UPDATE ' . self::$table . ' SET ';
+        $query = 'UPDATE ' . self::$table . ' SET updated_at = NOW(), ';
         $updateData = [];
     
         foreach($data as $key => $value){

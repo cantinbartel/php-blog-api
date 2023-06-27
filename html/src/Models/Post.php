@@ -9,6 +9,14 @@ use Ramsey\Uuid\Uuid;
 class Post {
     private static $table = 'posts';
 
+    private static function validate($postData, $categoryData) {
+        $data = [...$postData, ...$categoryData];
+        if (!isset($data['user_id']) || !isset($data['title']) || !isset($data['content']) || !isset($data['category_id'])) {
+            throw new \InvalidArgumentException("Missing required fields: user_id, title, content, category_id");
+        }
+        return;
+    }
+    
     public static function find($id) {
         $db = Database::getConnection();
         $query = 'SELECT p.*, c.name as category 
@@ -47,6 +55,7 @@ class Post {
     }
 
     public static function create($postData, $categoryData) {
+        self::validate($postData, $categoryData);
         $db = Database::getConnection();
         
         // Generate a UUID
@@ -65,14 +74,14 @@ class Post {
             // Insert post.id and category.id in the junction table
             $query = 'INSERT INTO post_categories (post_id, category_id) VALUES (:post_id, :category_id)';
             $stmt = $db->prepare($query);
-            $stmt->execute([
+            $result = $stmt->execute([
                 'post_id' => $postId,
                 'category_id' => $categoryData['category_id']
             ]);
             // Commit the changes previously made in the database
             $db->commit();
     
-            return $postId;
+            return $result;
         } catch(\PDOException $e) {
             // if anything goes wrong, we catch the exception, roll back the transaction, and then throw the exception.
             $db->rollback();
@@ -88,7 +97,7 @@ class Post {
             $db->beginTransaction();
     
             // Update the post in the posts table
-            $updateQuery = 'UPDATE ' . self::$table . ' SET ';
+            $updateQuery = 'UPDATE ' . self::$table . ' SET updated_at = NOW(), ';
             $updateData = [];
 
             foreach($postData as $key => $value){

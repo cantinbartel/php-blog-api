@@ -48,11 +48,11 @@ class UserController {
             // Hash password
             $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT); 
             // Create user
-            $user = User::create($data);
+            $result = User::create($data);
 
             header('Content-Type: application/json');
             http_response_code(201);
-            echo json_encode($user);
+            echo json_encode(['message' => 'User created', 'status' => $result]);
         } catch(\Exception $e) {
             header('Content-Type: application/json');
             http_response_code(500);

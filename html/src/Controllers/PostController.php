@@ -68,11 +68,11 @@ class PostController {
         
             $categoryData = ['category_id' => $data['category_id']];
         
-            $post = Post::create($postData, $categoryData);
+            $result = Post::create($postData, $categoryData);
         
             header('Content-Type: application/json');
             http_response_code(201);
-            echo json_encode($post);
+            echo json_encode(['message' => 'Post created', 'result' => $result]);
         } catch(\Exception $e) {
             header('Content-Type: application/json');
             http_response_code(500);
