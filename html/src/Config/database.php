@@ -5,15 +5,12 @@ namespace App\Config;
 use PDO;
 use PDOException;
 
-class Database
-{
+class Database {
     private static $host = "db";
     private static $dbname;
     private static $username;
     private static $password;
     private static $conn = null;
-
-    // constructeur privé
 
     // get the database connection
     public static function getConnection(): PDO {

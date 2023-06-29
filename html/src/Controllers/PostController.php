@@ -4,19 +4,15 @@ namespace App\Controllers;
 
 use App\Models\Post;
 
-class PostController {
+class PostController extends BaseController {
 
     // Get all posts
     public function index() {
         try {
             $posts = Post::getAll();
-            header('Content-Type: application/json');
-            http_response_code(200);
-            echo json_encode($posts);
+            $this->jsonResponse($posts);
         } catch(\Exception $e) {
-            header('Content-Type: application/json');
-            http_response_code(500);
-            echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+            $this->jsonError('Database error: ' . $e->getMessage());
         }
     }
 
@@ -25,18 +21,12 @@ class PostController {
         try {
             $post = Post::find($id);
             if ($post) {
-                header('Content-Type: application/json');
-                http_response_code(200);
-                echo json_encode($post);
+                $this->jsonResponse($post);
             } else {
-                header('Content-Type: application/json');
-                http_response_code(404);
-                echo json_encode(['error' => 'Post not found']);
+                $this->jsonError('Post not found', 404);
             } 
         } catch(\Exception $e) {
-            header('Content-Type: application/json');
-            http_response_code(500);
-            echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+            $this->jsonError('Database error: ' . $e->getMessage());
         }
     }
 
@@ -44,21 +34,16 @@ class PostController {
     public function indexByCategory($categoryId) {
         try {
             $posts = Post::getPostsByCategory($categoryId);
-            header('Content-Type: application/json');
-            http_response_code(200);
-            echo json_encode($posts);
+            $this->jsonResponse($posts);
         } catch(\Exception $e) {
-            header('Content-Type: application/json');
-            http_response_code(500);
-            echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+            $this->jsonResponse('Database error: ' . $e->getMessage());
         }
     }
 
     // Create a post
     public function store() {
         try {
-            $json = file_get_contents('php://input');
-            $data = json_decode($json, true);
+            $data = $this->getJsonInput();
         
             $postData = [
                 'title' => $data['title'],
@@ -69,23 +54,18 @@ class PostController {
             $categoryData = ['category_id' => $data['category_id']];
         
             $result = Post::create($postData, $categoryData);
-        
-            header('Content-Type: application/json');
-            http_response_code(201);
-            echo json_encode(['message' => 'Post created', 'result' => $result]);
+
+            $this->jsonResponse(['message' => 'Post created', 'result' => $result], 201);
         } catch(\Exception $e) {
-            header('Content-Type: application/json');
-            http_response_code(500);
-            echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+            $this->jsonError('Database error: ' . $e->getMessage());
         } 
     }
 
     public function update($id) {
         try {
             // Get JSON input
-            $json = file_get_contents('php://input');
-            $data = json_decode($json, true);
-    
+            $data = $this->getJsonInput();
+
             // Create postData with only the keys that are present in $data
             $postData = [];
             $keys = ['user_id', 'title', 'content'];
@@ -97,18 +77,11 @@ class PostController {
 
             $categoryId = isset($data['category_id']) ? $data['category_id'] : null;
 
-    
-            // Update post
             Post::update($id, $postData, $categoryId);
             $post = Post::find($id);
-    
-            header('Content-Type: application/json');
-            http_response_code(200);
-            echo json_encode(['message' => 'Post updated', 'post' => $post]);
+            $this->jsonResponse($post);
         } catch(\Exception $e) {
-            header('Content-Type: application/json');
-            http_response_code(500);
-            echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+            $this->jsonError('Database error: ' . $e->getMessage());
         }
     }
     
@@ -121,9 +94,7 @@ class PostController {
             http_response_code(200);
             echo json_encode(['message' => 'Post deleted']);
         } catch(\Exception $e) {
-            header('Content-Type: application/json');
-            http_response_code(500);
-            echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+            $this->jsonError('Database error: ' . $e->getMessage());
         }
     }
 }

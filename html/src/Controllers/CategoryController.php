@@ -4,55 +4,58 @@ namespace App\Controllers;
 
 use App\Models\Category;
 
-class CategoryController {
+class CategoryController extends BaseController {
 
     // Get all categories
     public function index() {
-        $categories = Category::getAll();
-        header('Content-Type: application/json');
-        echo json_encode($categories);
+        try {
+            $categories = Category::getAll();
+            $this->jsonResponse($categories);
+        } catch(\Exception $e) {
+            $this->jsonError('Database error: ' . $e->getMessage());
+        }
     }
 
     // Get a category by id
     public function show($id) {
-        $category = Category::find($id);
-        header('Content-Type: application/json');
-        echo json_encode($category);
+        try {
+            $category = Category::find($id);
+            $this->jsonResponse($category);
+        } catch(\Exception $e) {
+            $this->jsonError('Database error: ' . $e->getMessage());
+        }
     }
 
     // Create a new category
     public function store() {
-        // Get JSON input
-        $json = file_get_contents('php://input');
-        $data = json_decode($json, true);
-
-        // Create category
-        $category = Category::create($data);
-
-        header('Content-Type: application/json');
-        echo json_encode($category);
+        try {
+            $data = $this->getJsonInput();
+            $category = Category::create($data);
+            $this->jsonResponse(['message' => 'Category created', 'status' => $category], 201);
+        } catch(\Exception $e) {
+            $this->jsonError('Database error: ' . $e->getMessage());
+        }
     }
 
     // Update a category
     public function update($id) {
-        // Get JSON input
-        $json = file_get_contents('php://input');
-        $data = json_decode($json, true);
-
-        // Update category
-        Category::update($id, $data);
-
-        $category = Category::find($id);
-        header('Content-Type: application/json');
-        echo json_encode($category);
+        try {
+            $data = $this->getJsonInput();
+            Category::update($id, $data);
+            $category = Category::find($id);
+            $this->jsonResponse($category);
+        } catch(\Exception $e) {
+            $this->jsonError('Database error: ' . $e->getMessage());
+        }
     }
 
     // Delete a category
     public function destroy($id) {
-        // Delete the category
-        $category = Category::delete($id);
-
-        header('Content-Type: application/json');
-        echo json_encode(['message' => 'Category deleted']);
+        try {
+            $category = Category::delete($id);
+            $this->jsonResponse(['message' => 'Category deleted']);
+        } catch(\Exception $e) {
+            $this->jsonError('Database error: ' . $e->getMessage());
+        }
     }
 }

@@ -138,6 +138,7 @@ class Post {
     
 
     public static function delete($id) {
+        // INTEGRITY PROBLEM !!!!!!
         $db = Database::getConnection();
         $query = 'DELETE FROM ' . self::$table . ' WHERE id = :id';
         $stmt = $db->prepare($query);

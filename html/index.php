@@ -5,15 +5,27 @@ require_once __DIR__ . '/vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
-// var_dump($_ENV);
+$routeHandlers = [
+    new \App\Routes\UserRoutes(),
+    new \App\Routes\PostRoutes(),
+    new \App\Routes\CategoryRoutes()
+];
 
-// $jwtMiddleware = new \App\Middleware\JwtMiddleware(getenv('JWT_SECRET'));
+$matchFound = false;
 
-// User routes
-require_once __DIR__ . '/src/Routes/UserRoutes.php';
-require_once __DIR__ . '/src/Routes/PostRoutes.php';
-require_once __DIR__ . '/src/Routes/CategoryRoutes.php';
+foreach ($routeHandlers as $routeHandler) {
+    if ($routeHandler->handleRequest()) {
+        $matchFound = true;
+        break;
+    }
+}
 
+if (!$matchFound) {
+    header('Content-Type: application/json');
+    http_response_code(404);
+    echo json_encode(['message' => 'No route found for this URL']);
+    exit();
+}
 
 /* 
     CREATE ABSTRACT CONTROLLER 
