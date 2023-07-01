@@ -73,4 +73,13 @@ class User {
         $stmt = $db->prepare($query);
         $stmt->execute(['id' => $id]);
     }
+
+    public static function findByEmail($email) {
+        $db = Database::getConnection();
+        $query = 'SELECT * FROM ' . self::$table . " WHERE email = ? LIMIT 0,1";
+        $stmt = $db->prepare($query);
+        $stmt->execute([$email]);
+        // PDO::FETCH_ASSOC returns the data in an associative array.
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }    
 }

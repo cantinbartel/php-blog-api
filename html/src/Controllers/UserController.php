@@ -1,14 +1,32 @@
 <?php
 
 namespace App\Controllers;
+use App\Auth\Authorization;
 
 use App\Models\User;
 
 class UserController extends BaseController {
 
+    private function checkAuthorization() {
+            // Get JWT from the Authorization header
+            $authHeader = getallheaders()['Authorization'] ?? '';
+            // Extract JWT from 'Bearer {token}' format
+            $jwt = str_replace('Bearer ', '', $authHeader);
+
+            $auth = new Authorization();
+            // Validate the JWT and get the user data
+            $userData = $auth->authorize($jwt);
+          
+            if (!$userData) {
+                $this->jsonError('Not authorized', 403);
+                exit();
+            };
+    }
+
     // Get all users
     public function index() {
         try {
+            $this->checkAuthorization();
             $users = User::getAll();
             $this->jsonResponse($users);
         } catch(\Exception $e) {
@@ -62,6 +80,7 @@ class UserController extends BaseController {
     // Delete a user
     public function destroy($id) {
         try {
+            $this->checkAuthorization();
             // Delete the user
             $user = User::delete($id);
             $this->jsonResponse($user);

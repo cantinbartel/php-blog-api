@@ -8,8 +8,11 @@ $dotenv->load();
 $routeHandlers = [
     new \App\Routes\UserRoutes(),
     new \App\Routes\PostRoutes(),
-    new \App\Routes\CategoryRoutes()
+    new \App\Routes\CategoryRoutes(),
+    new \App\Routes\LoginRoutes()
 ];
+
+$auth = new \App\Auth\Authorization();
 
 $matchFound = false;
 

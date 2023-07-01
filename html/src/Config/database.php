@@ -14,14 +14,10 @@ class Database {
 
     // get the database connection
     public static function getConnection(): PDO {
-        self::$dbname = 'blog_api';
-        self::$username = 'root';
-        self::$password = 'rootpassword';
+        self::$dbname = $_ENV['MYSQL_DATABASE'];
+        self::$username = $_ENV['MYSQL_USER'];
+        self::$password = $_ENV['MYSQL_PASSWORD'];
         // self::$conn = null;
-
-        // print($_ENV['MYSQL_DATABASE']);
-        print(getenv('MYSQL_USER'));
-        print(getenv('MYSQL_PASSWORD'));
 
         try {
             self::$conn = new PDO("mysql:host=" . self::$host . ";dbname=" . self::$dbname, self::$username, self::$password);
