@@ -54,6 +54,18 @@ class Post {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public static function getPostsByUser($user_id) {
+        $db = Database::getConnection();
+        $query = 'SELECT p.*
+                  FROM posts p 
+                  LEFT JOIN users u ON p.user_id = u.id
+                  WHERE u.id = :user_id';
+        $stmt = $db->prepare($query);
+        $stmt->bindParam(':user_id', $user_id);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public static function create($postData, $categoryData) {
         self::validate($postData, $categoryData);
         $db = Database::getConnection();

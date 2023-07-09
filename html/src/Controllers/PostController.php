@@ -40,9 +40,20 @@ class PostController extends BaseController {
         }
     }
 
+    // Get posts by user
+    public function indexByUser($userId) {
+        try {
+            $posts = Post::getPostsByUser($userId);
+            $this->jsonResponse($posts);
+        } catch(\Exception $e) {
+            $this->jsonResponse('Database error: ' . $e->getMessage());
+        }
+    }
+
     // Create a post
     public function store() {
         try {
+            // Get JSON input
             $data = $this->getJsonInput();
         
             $postData = [
@@ -62,7 +73,7 @@ class PostController extends BaseController {
     }
 
     public function update($id) {
-        try {
+        try {  
             // Get JSON input
             $data = $this->getJsonInput();
 
@@ -77,22 +88,41 @@ class PostController extends BaseController {
 
             $categoryId = isset($data['category_id']) ? $data['category_id'] : null;
 
-            Post::update($id, $postData, $categoryId);
             $post = Post::find($id);
-            $this->jsonResponse($post);
+    
+            if (!$post) {
+                $this->jsonError('Post not found', 404);
+            }
+
+            // Only Admin or User who wrote the post are allowed to modify it  
+            $userJwtData = $this->checkAuthorization();
+            if ($userJwtData->role === self::ADMIN || $userJwtData->userId === $post['user_id']) {
+                Post::update($id, $postData, $categoryId);
+                $this->jsonResponse(['message' => 'Post updated']);
+            } else {
+                $this->jsonError('Not authorized', 403);
+            } 
         } catch(\Exception $e) {
             $this->jsonError('Database error: ' . $e->getMessage());
         }
     }
-    
 
     // Delete a post
     public function destroy($id) {
         try {
-            Post::delete($id);
-            header('Content-Type: application/json');
-            http_response_code(200);
-            echo json_encode(['message' => 'Post deleted']);
+            $post = Post::find($id);
+            if (!$post) {
+                $this->jsonError('Post not found', 404);
+            }
+
+            // Only Admin or User who wrote the post are allowed to delete it
+            $userJwtData = $this->checkAuthorization();
+            if ($userJwtData->role === self::ADMIN || $userJwtData->userId === $post['user_id']) {
+                Post::delete($id);
+                $this->jsonResponse(['message' => 'Post deleted']);
+            } else {
+                $this->jsonError('Not authorized', 403);
+            } 
         } catch(\Exception $e) {
             $this->jsonError('Database error: ' . $e->getMessage());
         }

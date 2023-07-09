@@ -29,6 +29,10 @@ class CategoryController extends BaseController {
     // Create a new category
     public function store() {
         try {
+            // Only admin can create a category
+            $userJwtData = $this->checkAuthorization();
+            $this->checkIsAdmin($userJwtData);
+            // Get JSON input
             $data = $this->getJsonInput();
             $category = Category::create($data);
             $this->jsonResponse(['message' => 'Category created', 'status' => $category], 201);
@@ -40,6 +44,10 @@ class CategoryController extends BaseController {
     // Update a category
     public function update($id) {
         try {
+            // Only admin can update a category
+            $userJwtData = $this->checkAuthorization();
+            $this->checkIsAdmin($userJwtData);
+            // Get JSON input
             $data = $this->getJsonInput();
             Category::update($id, $data);
             $category = Category::find($id);
@@ -52,7 +60,10 @@ class CategoryController extends BaseController {
     // Delete a category
     public function destroy($id) {
         try {
-            $category = Category::delete($id);
+            // Only admin can delete a category
+            $userJwtData = $this->checkAuthorization();
+            $this->checkIsAdmin($userJwtData);
+            Category::delete($id);
             $this->jsonResponse(['message' => 'Category deleted']);
         } catch(\Exception $e) {
             $this->jsonError('Database error: ' . $e->getMessage());

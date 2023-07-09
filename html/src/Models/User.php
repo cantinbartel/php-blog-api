@@ -17,7 +17,8 @@ class User {
 
     public static function find($id) {
         $db = Database::getConnection();
-        $query = 'SELECT * FROM ' . self::$table . ' WHERE id = ? LIMIT 0,1';
+        // SELECT * except password
+        $query = 'SELECT id, email, `name`, firstname, `role`, created_at, updated_at FROM ' . self::$table . ' WHERE id = ? LIMIT 0,1';
         $stmt = $db->prepare($query);
         $stmt->execute([$id]);
         // PDO::FETCH_ASSOC returns the data in an associative array.
@@ -26,7 +27,8 @@ class User {
 
     public static function getAll() {
         $db = Database::getConnection();
-        $query = 'SELECT * FROM ' . self::$table;
+        // SELECT * except password
+        $query = 'SELECT id, email, `name`, firstname, `role`, created_at, updated_at FROM ' . self::$table;
         $stmt = $db->prepare($query);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -79,7 +81,6 @@ class User {
         $query = 'SELECT * FROM ' . self::$table . " WHERE email = ? LIMIT 0,1";
         $stmt = $db->prepare($query);
         $stmt->execute([$email]);
-        // PDO::FETCH_ASSOC returns the data in an associative array.
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }    
 }

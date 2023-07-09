@@ -1,32 +1,17 @@
 <?php
 
 namespace App\Controllers;
-use App\Auth\Authorization;
 
 use App\Models\User;
 
 class UserController extends BaseController {
 
-    private function checkAuthorization() {
-            // Get JWT from the Authorization header
-            $authHeader = getallheaders()['Authorization'] ?? '';
-            // Extract JWT from 'Bearer {token}' format
-            $jwt = str_replace('Bearer ', '', $authHeader);
-
-            $auth = new Authorization();
-            // Validate the JWT and get the user data
-            $userData = $auth->authorize($jwt);
-          
-            if (!$userData) {
-                $this->jsonError('Not authorized', 403);
-                exit();
-            };
-    }
-
     // Get all users
     public function index() {
         try {
-            $this->checkAuthorization();
+            // Only ADMIN is able to access all the users info
+            $userJwtData = $this->checkAuthorization();
+            $this->checkIsAdmin($userJwtData);
             $users = User::getAll();
             $this->jsonResponse($users);
         } catch(\Exception $e) {
@@ -37,12 +22,18 @@ class UserController extends BaseController {
     // Get a user by id
     public function show($id) {
         try {
-            $user = User::find($id);
-            if ($user) {
-                $this->jsonResponse($user);
+            // Only Admin or User who want to access his information who can get user/:id
+            $userJwtData = $this->checkAuthorization();
+            if ($userJwtData->role === self::ADMIN || $userJwtData->userId === $id) {
+                $user = User::find($id);
+                if ($user) {
+                    $this->jsonResponse($user);
+                } else {
+                    $this->jsonError('User not found', 404);
+                }
             } else {
-                $this->jsonError('User not found', 404);
-            }   
+                $this->jsonError('Not authorized', 403);
+            }  
         } catch(\Exception $e) {
             $this->jsonError('Database error: '. $e->getMessage());
         }
@@ -55,7 +46,6 @@ class UserController extends BaseController {
             $data = $this->getJsonInput();
             // Hash password
             $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT); 
-            // Create user
             $result = User::create($data);
             $this->jsonResponse(['message' => 'User created', 'status' => $result], 201);
         } catch(\Exception $e) {
@@ -66,9 +56,11 @@ class UserController extends BaseController {
     // Update a user
     public function update($id) {
         try {
+            // Only ADMIN is able to update a user
+            $userJwtData = $this->checkAuthorization();
+            $this->checkIsAdmin($userJwtData);
             // Get JSON input
             $data = $this->getJsonInput();
-            // Update user
             $user = User::update($id, $data);
             $user = User::find($id);
             $this->jsonResponse($user);
@@ -80,8 +72,9 @@ class UserController extends BaseController {
     // Delete a user
     public function destroy($id) {
         try {
-            $this->checkAuthorization();
-            // Delete the user
+            // Only ADMIN is able to delete a user
+            $userJwtData = $this->checkAuthorization();
+            $this->checkIsAdmin($userJwtData);
             $user = User::delete($id);
             $this->jsonResponse($user);
         } catch(\Exception $e) {

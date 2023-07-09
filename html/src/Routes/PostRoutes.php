@@ -11,7 +11,9 @@ class PostRoutes extends Router {
         $this->routes = [
             'GET' => [
                 'posts' => [$postController, 'index'],
-                'posts/([a-f0-9\-]+)' => [$postController, 'show']
+                'posts/([a-f0-9\-]+)' => [$postController, 'show'],
+                'posts/categories/([a-f0-9\-]+)' => [$postController, 'indexByCategory'],
+                'posts/users/([a-f0-9\-]+)' => [$postController, 'indexByUser']
             ],
             'POST' => [
                 'posts' => [$postController, 'store']

@@ -26,17 +26,4 @@ class Authorization {
             return false;
         }
     }
-
-    public function authorizeAdmin($jwt) {
-        try {
-            $decoded = JWT::decode($jwt, new Key($this->jwtKey, 'HS256'));
-            $user = User::find($decoded->data->userId);
-            if (!$user || $user['role'] !== 'ADMIN') return false;
-            return $decoded;
-        } catch (ExpiredException $e) {
-            return false;
-        } catch (\Exception $e) {
-            return false;
-        }
-    }
 }
