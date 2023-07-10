@@ -29,20 +29,3 @@ if (!$matchFound) {
     echo json_encode(['message' => 'No route found for this URL']);
     exit();
 }
-
-/* 
-    CREATE ABSTRACT CONTROLLER 
-        class UserController extends AbstractController 
-        class PostController extends AbstractController 
-
-    CREATE ROUTER CLASS
-        class UserRoutes extends Router
-        class PostRoutes extends Router
-
-    Database Singleton
-        https://refactoring.guru/design-patterns/singleton/php/example
-
-    JWT
-        https://lcobucci-jwt.readthedocs.io/en/stable/quick-start/
-*/
-
