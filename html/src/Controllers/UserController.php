@@ -56,14 +56,21 @@ class UserController extends BaseController {
     // Update a user
     public function update($id) {
         try {
-            // Only ADMIN is able to update a user
+            // Only ADMIN or the corresponding user himself are able to update the user
             $userJwtData = $this->checkAuthorization();
-            $this->checkIsAdmin($userJwtData);
-            // Get JSON input
-            $data = $this->getJsonInput();
-            $user = User::update($id, $data);
-            $user = User::find($id);
-            $this->jsonResponse($user);
+            if ($userJwtData->role === self::ADMIN || $userJwtData->userId === $id) {
+                // Get JSON input
+                $data = $this->getJsonInput();
+                User::update($id, $data);
+                $user = User::find($id);
+                if ($user) {
+                    $this->jsonResponse($user);
+                } else {
+                    $this->jsonError('User not found', 404);
+                }
+            } else {
+                $this->jsonError('Not authorized', 403);
+            } 
         } catch(\Exception $e) {
             $this->jsonError('Database error: ' . $e->getMessage());
         }
